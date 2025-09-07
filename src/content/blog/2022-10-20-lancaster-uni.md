@@ -28,7 +28,7 @@ Charles Carter, the University's first Vice-Chancellor, had a clear view of the 
 
 > The Spine is to be continuously flanked from end to end with public rooms, lively and inviting places lit up at night, which the students will go there to mix. These rooms will be more like the lively high street of a small town than part of a secluded campus…the first aim is to prevent the emergence of a “nine to five” university.
 
-![](/assets/blog/physics_gardens.png)
+![](/astro-tutorial/assets/blog/physics_gardens.png)
 
 It's not perfect, of course. 1960's construction methods often haven't stood the test of time, and the Lancaster campus has suffered its share of draughts, damp, and rotting window frames.
 But it's nothing a little renovation can't fix, and the campus has been extensively renovated in the past twenty years to fix many of these structural problems.
