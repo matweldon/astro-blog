@@ -17,7 +17,7 @@ I chose to build a decision tree classifier, primarily because I had the least f
 
 Now, at this point you might be thinking: if you ask any capable model to create a decision tree model it will just spit out some code that works. So how does it help me learn? The key is what I'd call the 'prompt, review and tinker' method: get something that works; read it carefully, annotate it; and based on that understanding iterate with a combination of manual and AI-assisted improvements.
 
-I began by installing Simon Willison's `llm` [command-line tool](https://matweldon.github.io/astro-blog/blog/llm-usage/), which provides a streamlined interface to various language models. Then I typed this into my 'prompt.md':
+I began by installing Simon Willison's `llm` [command-line tool](https://github.com/simonw/llm)  (see my blog post on how I use the tool [here](https://matweldon.github.io/astro-blog/blog/llm-usage/)), which provides a streamlined interface to various language models. Then I typed this into my 'prompt.md':
 
 > I'd like you to write a decision-tree classifier for me with a train method and a predict method. It's for learning so it should be very simple with no features apart from the guts of the algorithm wrapped in a simple class. The classifier train method should take a matrix X and a binary array y. The predict method should just take a matrix X. Just write python code with no explanation or even fenced code blocks. I'm going to pipe the result directly into a file so it's important you DON'T ADD ANY TEXT OR WRAPPER.
 
@@ -31,17 +31,17 @@ First, I went through and added comments to explain what each part was doing. Th
 
 I asked the model to simulate some fake data on two dimensions, because I wanted something that I could easily plot. It looked like it was doing roughly what it should:
 
-[picture](#)
+![Decision tree classifier trained on fake data](/astro_blog/decision_tree_classifier_plot-fs8.png "Decision tree classifier trained on fake data")
 
 Once I felt like I had a grip on the basic implementation, I started extending it. First thing I tried was building a random forest, because what's the use of a single decision tree? I added some other features too:
 
 * I decided the random forest especially would benefit from being able to set a minimum leaf size, to regularise predictions
 
-[pictures](#)
+![Random forest classifier with minimum leaf node sizes](/astro_blog/random_forest_classifier_plot-fs8.png "Random forest classifier with minimum leaf node sizes")
 
 * I wanted to see in more detail how the model made its predictions, so I added the ability to make probability predictions instead of just a single modal prediction
 
-[pictures](#)
+![Random forest probability contours](/astro_blog/random_forest_probability_contour-fs8.png "Random forest probability contours")
 
 Each of these extensions was easy to add with the help of LLMs but forced me to really understand what was going on in the original implementation.
 
@@ -49,7 +49,7 @@ Each of these extensions was easy to add with the help of LLMs but forced me to 
 
 Although it was fun to draw pictures with fake data and a known ground truth, at some point I wanted to check that it would work reasonably on real data. Something I haven't mentioned until now is that the course leader heavily hinted that in a couple of weeks we'll be deploying these home-made models as APIs. That means the model has to work with data 'in the wild' and needs to be deployable after training.
 
-I browsed the HuggingFace datasets directory and eventually found a medium-sized [dataset](#) of house attributes and prices. I decided that the data was a good candidate for a prediction use case. I could convert the house price to a binary measure, and then train a model to predict whether a house costs more than $1 million based on attributes such as bedrooms, floor area and local amenities.
+I browsed the HuggingFace datasets directory and eventually found a medium-sized [dataset](https://huggingface.co/datasets/ideaguy3d/simple-housing-price-prediction) of house attributes and prices. I decided that the data was a good candidate for a prediction use case. I could convert the house price to a binary measure, and then train a model to predict whether a house costs more than $1 million based on attributes such as bedrooms, floor area and local amenities.
 
 At first, I downloaded the dataset and started working on it in the same way I would if I was writing an analytical pipeline: build a set of scripts to load, clean and manipulate the data before training the model on it and then validating the fit. An important pre-processing step was to bin many of the features of the house prices dataset into quantiles. This was necessary because my inefficient implementation of decision trees loops through every possible candidate threshold of every feature, which would quickly become intractable with many continuous variables.
 
@@ -59,16 +59,16 @@ So I had to refactor it to bake the preprocessing into the model itself. The qua
 
 The final task to make the model usable in an API was to make the trained model serialisable -- if it's to be run in a Flask or FastAPI server it'll need to be loaded from disk or cloud storage quickly and reliably. At this point I finally had Anthropic access through the Google Vertex API, so I switched to using Claude Code. Unfortunately the API was unreliable and frequently threw 429 errors due to the volume of requests, which forced Claude Code to use retries to complete tasks. However, in the end it managed to add proper serialization so the model could save and load everything it needed -- both the tree structure and all the preprocessing parameters.
 
+![Picture of claude code](/astro_blog/claude1.png "Claude Code added serialisation support to the models")
+
 
 ### Reflections on using AI to learn
 
 The tool you use matters more than I expected. Simon Willison's `llm` package sits in this interesting middle space where it's automated enough to be convenient -- you can pipe content to and from files -- but it's not so automated that you can zone out. Every step requires you to do something deliberately, which naturally makes you think about what you're doing.
 
-[picture of llm](#)
-
 In contrast, when I used Claude Code with Sonnet 4.5 through Google cloud platform, it felt as if I almost had nothing to do, except wait for the retries as the Google Vertex API frequently failed to cope with the throughput. Cost is another factor that distinguishes non-agentic from agentic uses of AI for coding. I used Claude Code for only about 45 minutes, and it cost nearly £3 in tokens.
 
-[picture of claude code](#)
+![picture of claude code](/astro_blog/claude2.png "Claude worked like magic, except that the API was severely rate-limited on Google cloud")
 
 It's true that using LLMs will have hidden some subtlety from me that I won't even realise I've missed. But I feel that using the LLM allows me to focus on the parts of the process I'm curious about, and ignore details I'm less interested in. For instance, I've never properly learned any plotting libraries and now I'm pretty sure I never will because with LLMs I don't need to. Other people might feel differently about that and that's fine -- everyone's got different things they actually need to know versus things they can afford to treat as black boxes.
 
