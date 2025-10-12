@@ -9,6 +9,9 @@ slug: week-3
 
 * loss, gradients, optimisation
 * Some cool demos
+ - https://cs231n.stanford.edu/
+ - https://emiliendupont.github.io/2018/01/24/optimization-visualization/
+ - https://playground.tensorflow.org/
 * Pytorch:
   - Linear regression example
   - Why `no_grad` is needed (because any torch.tensor remembers any functions it's associated with otherwise)
@@ -16,27 +19,56 @@ slug: week-3
   - More cool recursive functions
   - Why grad accumulates (because the graph is not necessarily a tree)
 
+Week 3 of the AI accelerator introduced the concepts of deep learning, brought to life by some fun browser-based demos and practical exercises with Pytorch. The course curriculum covered the basic architecture of neural networks, the loss function, gradients, backpropagation and gradient descent. We didn't have much time to cover the material so self-study was essential. I think I would have really struggled to grasp all these concepts for the first time in the time available, but the course leader clearly explained how everything fit together.
+
+### Interactive demos
+
+One of the tools the course leader used really effectively was interactive browser-based demos. I especially enjoyed playing around with the Tensorflow [neural network playground](https://playground.tensorflow.org/) which gives a good intuition into neural network architectures. I got a good intuition from making the neural network 'too small' so that it was not able to fit the data, and then gradually building up the representative capacity by adding nodes and layers. Another neural network running in the browser, although less interactive, was the Stanford [Deep Learning for Computer Vision](https://cs231n.stanford.edu/) course website.
+
+To allow us to experiment with optimisation algorithms, the course leader used an open-source project by [Emilien Dupont](https://emiliendupont.github.io/2018/01/24/optimization-visualization/) which shows visually how gradient descent and related algorithms find the minimum of a loss function.
+
+
+### Back to basics - simple linear regression
+
+After covering the concepts we were introduced to the Pytorch package. I have some experience training deep learning models, but deep learning libraries, Pytorch in particular, still hold some mysteries for me.
+
+
+
+
+
+
+
 ```python
+# Scalar parameters
 a = torch.randn(1, requires_grad=True)
 b = torch.randn(1, requires_grad=True)
-lr = 0.01
+
+learning_rate = 0.01
 for step in range(100):
     y_pred = a + b * x
+
+    # loss := mean squared error
     loss = ((y_pred - y) ** 2).mean()
 
     # (a,b) -> y_pred -> loss forms a DAG
-    # Backpropagation traverses the graph in reverse, building up gradients
+    # Backpropagation traverses the graph in reverse,
+    # calculating the gradients in (a,b)
     loss.backward()
 
     with torch.no_grad():
-        a -= lr * a.grad
-        b -= lr * b.grad
+        # Step down the gradient
+        a -= learning_rate * a.grad
+        b -= learning_rate * b.grad
+
+        # Zero the gradient for the next run
         a.grad.zero_()
         b.grad.zero_()
 
     if step % 10 == 0:
         print(f"Step {step}: Loss={loss.item():.4f}, a={a.item():.4f}, b={b.item():.4f}")
 ```
+
+### The computational graph
 
 ```python
 def traverse_graph(grad_fn):
@@ -72,7 +104,7 @@ def pretty_print_graph(node, prefix='', is_last=True, show_memloc=False):
 
 ```python
 import torch
-# Fixed matrix 'data'
+# Fixed 2*2 matrix 'data'
 x = torch.randn((2,2), requires_grad=False)
 
 # Matrix 'parameters'
