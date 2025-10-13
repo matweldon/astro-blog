@@ -19,7 +19,9 @@ slug: week-3
   - More cool recursive functions
   - Why grad accumulates (because the graph is not necessarily a tree)
 
-Week 3 of the AI accelerator introduced the concepts of deep learning, brought to life by some fun browser-based demos and practical exercises with Pytorch. The course curriculum covered the basic architecture of neural networks, the loss function, gradients, backpropagation and gradient descent. We didn't have much time to cover the material so self-study was essential. I think I would have really struggled to grasp all these concepts for the first time in the time available, but the course leader clearly explained how everything fit together.
+Week 3 of the AI accelerator introduced the concepts of deep learning, brought to life by some fun browser-based demos and practical exercises with Pytorch. The course curriculum covered the basic architecture of neural networks, the loss function, gradients, backpropagation and gradient descent. We didn't have much time to cover the material so self-study was essential. I think I would have really struggled to grasp all these concepts for the first time in the time available.
+
+Rather than give a blow-by-blow account of the week I'll just cover some tidbits that I thought were interesting or new.
 
 ### Interactive demos
 
@@ -28,7 +30,7 @@ One of the tools the course leader used really effectively was interactive brows
 To allow us to experiment with optimisation algorithms, the course leader used an open-source project by [Emilien Dupont](https://emiliendupont.github.io/2018/01/24/optimization-visualization/) which shows visually how gradient descent and related algorithms find the minimum of a loss function.
 
 
-### Back to basics - simple linear regression
+### Pytorch - simple linear regression
 
 After covering the concepts we were introduced to the Pytorch package. I have some experience training deep learning models, but deep learning libraries, Pytorch in particular, still hold some mysteries for me.
 
