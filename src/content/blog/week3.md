@@ -117,24 +117,25 @@ In this function we can see that each tensor object has an attribute `.grad_fn`,
 Then I asked for a function to print the result. I had the bright idea to print it like a file directory structure -- it just seemed like a clear way to present it, YMMV:
 
 ```python
-def pretty_print_graph(node, prefix='', is_last=True, show_memloc=False):
-    """
-    Recursively prints the computation graph in a tree-like structure.
-    Expects ((name, memloc), [children]) as node format.
-    """
+def pretty_print_graph(node, prefix='', 
+    is_last=True, show_memloc=False):
+
     name, children = node
     connector = '└── ' if is_last else '├── '
+
     if show_memloc:
         formatted_name = f"{name[0]}: {name[1]}"
     else:
         formatted_name = name[0]
+
     print(prefix + connector + formatted_name)
+
     if children:
-        # Prepare the prefix for child nodes:
         child_prefix = prefix + ('    ' if is_last else '│   ')
         for idx, child in enumerate(children):
             is_child_last = (idx == len(children) - 1)
-            pretty_print_graph(child, child_prefix, is_child_last, show_memloc)
+            pretty_print_graph(child, child_prefix, 
+                        is_child_last, show_memloc)
 ```
 
 Both of these functions are actually the final iterations after I asked for some extra features. Let's apply it to our linear regression example:
