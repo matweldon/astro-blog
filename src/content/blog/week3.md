@@ -6,22 +6,9 @@ description: Deep learning and Pytorch
 slug: week-3
 ---
 
+Week three of the AI accelerator introduced the concepts of deep learning, brought to life by some fun browser-based demos and practical exercises with Pytorch. The course curriculum covered the basic architecture of neural networks, the loss function, gradients, backpropagation and gradient descent. We didn't have much time to cover the material so self-study was essential. I think I would have really struggled to grasp all these concepts for the first time in the time available.
 
-* loss, gradients, optimisation
-* Some cool demos
- - https://cs231n.stanford.edu/
- - https://emiliendupont.github.io/2018/01/24/optimization-visualization/
- - https://playground.tensorflow.org/
-* Pytorch:
-  - Linear regression example
-  - Why `no_grad` is needed (because any torch.tensor remembers any functions it's associated with otherwise)
-  - understanding how the computational graph works
-  - More cool recursive functions
-  - Why grad accumulates (because the graph is not necessarily a tree)
-
-Week 3 of the AI accelerator introduced the concepts of deep learning, brought to life by some fun browser-based demos and practical exercises with Pytorch. The course curriculum covered the basic architecture of neural networks, the loss function, gradients, backpropagation and gradient descent. We didn't have much time to cover the material so self-study was essential. I think I would have really struggled to grasp all these concepts for the first time in the time available.
-
-Rather than give a blow-by-blow account of the week I'll just cover some tidbits that I thought were interesting or new. I ended up spending a couple of hours on Friday going on a productive tangent, diving into the computational workings of the Pytorch package, so most of this post is about that.
+Rather than give a blow-by-blow account of the week I'll just cover the bits that I thought were interesting or new. I ended up spending a couple of hours on Friday going on a productive tangent, diving into the computational workings of the Pytorch package, so most of this post is about that. Most of the article assumes familiarity with the basics of deep learning.
 
 ### Interactive demos
 
@@ -32,22 +19,24 @@ To allow us to experiment with optimisation algorithms, the course leader used a
 
 ### Pytorch: simple linear regression
 
-I have some superficial experience with Pytorch, but I've always found the API a bit impenetrable, so I decided to do some simple experiments to get some intuition into how it works under the hood. I think this is something that distinguishes my learning preferences; I've worked with talented colleagues who are happy to see a new package and say "right, what's the most impressive thing I can build with this?" Whereas I'm quite cautious about building with a new tool until I understand how it works.
+I have some superficial experience with Pytorch, but I've always found the API a bit impenetrable, so I decided to do some simple experiments to get some intuition into how it works under the hood. I think this is something that distinguishes my learning preferences from others; I've worked with talented colleagues who are happy to see a new package and say "right, what's the most impressive thing I can build with this?" Whereas I'm quite cautious about building with a new tool until I've taken it back to basics to understand how it works.
 
-For example, with Pytorch, I see a code snippet like:
+For example, with Pytorch, typically we'll see a snippet like:
 
 ```python
 for data, target in dataloader:
-    optimizer.zero_grad() # Reset gradients to zero
-    output = model(data) # y_hat = model(X)
-    loss = loss_fn(output, target) # loss(y,y_hat)
-    loss.backward() # Back-propagation to calculate gradients
-    optimizer.step() # Update parameters
+    optimizer.zero_grad()
+    output = model(data) 
+    loss = loss_fn(output, target) 
+    loss.backward() 
+    optimizer.step()
 ```
 
-and I have so many questions! Why does the optimiser have to zero all the gradients at the start of each iteration? Why aren't they just overwritten by default? If the model object contains all of the differentiable parameters, why is `.backward()` called on the loss and not on the model object? For that matter, why is `.zero_grad()` and `.step()` called on the optimizer and not on the model parameters? What is all this spooky action at a distance?
+If you've used Pytorch before you'll have seen a similar training loop: load the data a batch at a time; zero the gradients ready to recompute them; get the predicted output by inference from the model and the data; compare the prediction to the target with the loss function; compute the gradients of the parameters with respect to the loss ($\nabla_{\theta} L$) through back-propagation; and finally update the parameters a step.
 
-This is where the flexible course structure was very handy, because I was able to have a long conversation with an LLM about this code snippet, and gradually the picture became clearer. What my naive non-computer-science brain didn't understand, is the complex web of memory references extending like a mycelial network under the surface of my code.
+But I see this snippet, and I have so many questions! Why does the optimiser have to zero all the gradients at the start of each iteration? Why aren't they just overwritten by default? If the model object contains all of the differentiable parameters, why is `.backward()` called on the loss and not on the model object? For that matter, why is `.zero_grad()` and `.step()` called on the optimizer and not on the model parameters? What is all this spooky action at a distance?
+
+This is where the flexible course structure was very handy, because I was able to have a long conversation with an LLM about this code snippet, and gradually the picture became clearer. Through explanation, examples, and giving me code to run, the LLM gradually helped me to see what my naive non-computer-science brain didn't understand -- the unseen complex web of memory references extending like a mycelial network under the surface of my code.
 
 First, I asked the LLM to show me the most basic example I could imagine: a simple linear regression.
 
@@ -100,9 +89,9 @@ for step in range(90):
 
 There's a lot going on here. Here, the gradient attributes on the parameters are zeroed explicitly which was more intuitive to me, but still didn't explain why the gradients don't just overwrite by default. The LLM explained why the `with torch.no_grad():` block was needed. Because Pytorch normally records any mathematical operations on tensors that might contribute to the gradients, you have to specifically tell Pytorch not to do this when iterating over the parameters. 
 
-Using Pytorch for linear regression is like using a sledgehammer to crack a nut (and as a former econometrician I still bear the $(X^TX)^{-1}X^Ty$ that was branded into my chest, Yellowstone-style) but at this stage I'm beginning to see how the flow of computations for backpropagation works.
+At this stage I'm beginning to see how the flow of computations for backpropagation works.
 
-Basically, every piece of data in a Pytorch system -- including all of the parameters, the `data` and `target` (i.e. $X$ and $y$), the `output` (i.e. $\hat{y}$) and the loss -- is a `torch.tensor` object, a multi-dimensional array of numbers with additional attributes. When instantiated in code, each tensor records the mathematical operations (addition, multiplication, matrix multiplication etc.) that link it to other tensors, and saves a list of pointers that point backwards to the data objects it was made from. The LLM explained that these pointers form a huge computational graph that the gradient backpropagation traverses to accumulate (sum) gradients in the parameters, which are the leaf nodes of the graph. The `.backward()` method is just called on the loss because the loss is the root node of this graph. In fact, the `.backward()` method can be called on any scalar tensor object.
+Basically, every piece of data in a Pytorch system -- including all of the parameters, the `data` and `target` (i.e. $X$ and $y$), the `output` (i.e. $\hat{y}$) and the loss -- is a `torch.tensor` object, a multi-dimensional array of numbers with additional attributes. When instantiated in code, each tensor records the mathematical operations (addition, multiplication, matrix multiplication etc.) that link it to other tensors, and saves a list of pointers that point backwards to the data objects it was made from. The LLM explained that these pointers form a huge computational graph that the gradient backpropagation traverses to accumulate (sum) gradients in the parameters, which are the leaf nodes of the graph. The `.backward()` method is just called on the loss because the loss is the root node of the graph. In fact, the `.backward()` method can be called on any scalar tensor object.
 
 Then I had an idea: last week I built a decision tree classifier, and what I learned from that experience is that LLMs are very good at writing recursive functions to traverse graphs. Why don't I just get the LLM to visualise this computational graph for me?
 
@@ -202,7 +191,7 @@ pretty_print_graph(traverse_graph(h.grad_fn))
 #         └── AccumulateGrad
 ```
 
-Interesting! But when we count up the leaf nodes (`AccumulateGrad`) we find that there are more than the four we expected. This is because some of the parameters enter the graph more than once. There's no way to print the names of variables associated with the functions (Pytorch doesn't care about the variables -- it only cares about the objects in memory, some of which aren't even bound to variables) but we can print a shortened hex string for the memory location. This makes it clear that some of the leaves of the graph are pointing to the same place.
+Interesting! But when we count up the leaf nodes we find that there are more than the four we expected. This is because some of the parameters enter the graph more than once. There's no way to print the names of variables associated with the functions (Pytorch doesn't care about the variables -- it only cares about the objects in memory, some of which aren't even bound to variables) but we can print a shortened hex string for the memory location. This makes it clear that some of the leaves of the graph are pointing to the same place.
 
 ```python
 pretty_print_graph(traverse_graph(h.grad_fn),show_memloc=True)
@@ -223,7 +212,9 @@ pretty_print_graph(traverse_graph(h.grad_fn),show_memloc=True)
 # Variable names added by me
 ```
 
-A neural network gradient graph is not, in general, a tree -- as is intuitive when we think of vast, densely-connected networks. So printing it like this can mislead us if we don't know better. But hang on... I can feel one final piece of the puzzle falling into place. The back-propagation algorithm also traverses the graph in a very similar way -- it too sees something that looks like a tree. What happens when the back-propagation algorithm visits the same parameter leaf node twice on different branches? The algorithm can't see the whole graph -- it doesn't know it already visited that node -- so how does it avoid getting the wrong answer? It just adds the gradient to whatever it finds there! That finally explains why gradients accumulate by default, and have to be explicitly zeroed after each iteration!
+A neural network gradient graph is not, in general, a tree -- which is intuitive when we think of vast, densely-connected networks. So printing it like this can mislead us if we don't know better. But... this gives us some insight into the final piece of the puzzle -- the need for `.zero_grad()`! 
+
+The back-propagation algorithm also traverses the graph in a very similar way to our python function -- it too sees something that looks like a tree. What happens when the algorithm visits the same parameter leaf node twice on different branches? It can't see the whole graph -- it doesn't know it already visited that node -- so how does it avoid getting the wrong answer? It just adds the gradient to whatever it finds there! That finally explains why gradients accumulate by default, and have to be explicitly zeroed after each iteration!
 
 For example, the gradient of `h` with respect to parameter `a` is the sum of its gradient via both branches. It looks like this:
 
@@ -236,4 +227,4 @@ a.grad
 
 The twos are there because the parameter is just linked to `loss` by addition, which would just be a matrix of ones, but it appears twice in the computational graph.
 
-At the end of this week, I still haven't used Pytorch to fine-tune any billion-parameter language models, or train any vision models, or even classify digits. But at this point I feel like I have drunk deep from its well of secrets, and I am suffused by an immense calm. I am a master of the gradients. I think I can _feel_ the computational graph spreading its mycelial tendrils across my desk towards my keyboard, calling me.
+At the end of this week, I still haven't used Pytorch to fine-tune any billion-parameter language models, or train any vision models, or even classify digits. But at this point I feel like I have drunk deep from its well of secrets, and I am suffused by a sense of connectedness to the mycelial tendrils of the graph itself. I am a master of the gradients. Why would I want to spoil this feeling by actually training a model on data?

@@ -36,6 +36,10 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				padding: 1em;
 				color: rgb(var(--gray-dark));
 			}
+			.prose .katex-display {
+				margin: 1em 0;
+				text-align: center;
+			}
 			.title {
 				margin-bottom: 1em;
 				padding: 1em 0;
@@ -54,7 +58,12 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 			}
 		</style>
 	</head>
-
+	<link
+		rel="stylesheet"
+		href="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.css"
+		integrity="sha384-WcoG4HRXMzYzfCgiyfrySxx90XSl2rxY5mnVY5TwtWE6KLrArNKn0T/mOgNL0Mmi"
+		crossorigin="anonymous"
+	/>
 	<body>
 		<Header />
 		<main>
