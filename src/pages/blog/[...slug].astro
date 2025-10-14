@@ -13,6 +13,10 @@ export async function getStaticPaths() {
 type Props = CollectionEntry<'blog'>;
 
 const post = Astro.props;
+const isDraft = post.data.draft;
+if (isDraft && import.meta.env.PROD) {
+	return Astro.redirect('/astro-blog/404/');
+}
 const { Content } = await render(post);
 ---
 
