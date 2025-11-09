@@ -1,6 +1,6 @@
 ---
 date: "2025-11-08"
-title: "Week 5"
+title: "Week 6"
 pubDate: 8 November 2025
 description: ...
 draft: false
