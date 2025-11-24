@@ -1,6 +1,6 @@
 ---
 date: "2025-09-27"
-title: "AI Accelerator Week 1"
+title: "Week 1"
 pubDate: 27 September 2025
 description: Learning objectives and set-up
 slug: week-1

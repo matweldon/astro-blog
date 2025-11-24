@@ -1,6 +1,6 @@
 ---
 date: "2025-10-03"
-title: "AI Accelerator Week 2"
+title: "Week 2"
 pubDate: 3 October 2025
 description: Machine learning
 slug: week-2

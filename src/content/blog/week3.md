@@ -1,6 +1,6 @@
 ---
 date: "2025-10-10"
-title: "AI Accelerator Week 3"
+title: "Week 3"
 pubDate: 10 October 2025
 description: Deep learning and Pytorch
 slug: week-3
