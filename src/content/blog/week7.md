@@ -3,7 +3,7 @@ date: "2025-11-22"
 title: "Week 7"
 pubDate: 22 November 2025
 description: ...
-draft: true
+draft: false
 slug: week-7
 ---
 
