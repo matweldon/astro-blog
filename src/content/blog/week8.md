@@ -7,7 +7,7 @@ draft: false
 slug: week-8
 ---
 
-This week, we covered topics around DevOps and engineering. Rather than going into depth on a topic, we covered a range of topics superficially, including: the meaning of DevOps; provisioning cloud resources; Terraform; CI/CD; containers; and git. The range of prior experiences of the course participants is wide, so it's difficult to cater to everyone's learning needs, but I found the wide overview of topics useful. I was especially interested in containers, and the question of how to lock down an environment for an AI agent - the course leader obligingly went into detail on how to create and harden secure containers. He recommended [Podman]() as a more secure alternative to Docker. I've created a [TILs](/astro-blog/blog/tils) post to capture some of the smaller things I learned each week.
+This week, we covered topics around DevOps and engineering. Rather than going into depth on a topic, we covered a range of topics superficially, including: the meaning of DevOps; provisioning cloud resources; Terraform; CI/CD; containers; and git. The range of prior experiences of the course participants is wide, so it's difficult to cater to everyone's learning needs, but I found the wide overview of topics useful. I was especially interested in containers, and the question of how to lock down an environment for an AI agent - the course leader obligingly went into detail on how to create and harden secure containers. He recommended [Podman](https://podman.io/) as a more secure alternative to Docker. I've created a [TILs](/astro-blog/blog/tils) post to capture some of the smaller things I learned each week.
 
 We also spent time on our end-of-course projects. Over the past three weeks I've spent a lot of time coding with agents (mainly Claude Code (Sonnet 4.5), Gemini Cli (Gemini 2.5 pro) and GitHub Copilot agent mode (GPT 5)) so I'm going to take this opportunity to write down some impressions while they're fresh in my mind.
 
@@ -23,8 +23,6 @@ This is the most predictable thing I've learned, and for anyone following the hy
 
 Qualitatively, it appears that one of the key drivers of LLM's recent improvement in agentic workflows is that they have become much better at using tools. It's not just that they know how to call tools, but they seem to be genuinely able to: a) recognise that they have an information need, and choose how to call tools appropriately to give them that information, and (b) adapt and update their actions based on the results they receive from tool calls in non-trivial ways.
 
-[example]
-
 #### 3. Tool design is not standardised, and has a big effect on results
 
 This is probably my most important insight from exploring different agentic coding tools: the developers have made very different decisions regarding the design of inputs and outputs for tools, and those decisions have a big effect on results. In fact, they make some models seem much more intelligent than others. It's a bit like the agent equivalent of UX.
@@ -37,16 +35,37 @@ It may be a result of a model being developed by one software house, OpenAI, and
 
 #### 4. Agent developers use 'reinforcement' tricks to keep agents on-task
 
-This term, explained [here]() and distinct from reinforcement learning, refers to techniques used by agent developers to keep agents on-task through a long project. Usually, it involves injecting additional tokens into the loop, that remind the agent of its original purpose, its system instructions, its capabilities and other things it needs to keep 'front of mind'.
+This term, explained [here](https://lucumr.pocoo.org/2025/11/21/agents-are-hard/) and distinct from reinforcement learning, refers to techniques used by agent developers to keep agents on-task through a long project. Usually, it involves injecting additional tokens into the loop, that remind the agent of its original purpose, its system instructions, its capabilities and other things it needs to keep 'front of mind'. 
+
+In Claude Code, these are implemented as hooks in the agent harness, that can trigger before and after tool calls, or at regular intervals. Users can also implement their own hooks. Examples of reinforcement include the message printed for the agent after updating the todo list:
 
 > Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
 
-#### 5. Agents are incredibly verbose, and a lot of what they generate is (seemingly useful) repetition
+And the message printed when the agent calls the `Read` tool:
 
+> \<system-reminder\>Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.\<\/system-reminder\>
+
+On Claude Code web, there's also a hook that checks whether there are uncommited changes, and reminds the agent to commit and push them before stopping.
+
+#### 5. Agents are incredibly verbose, and a lot of what they generate is repetition
+
+Agentic coding tools use, in general, an order of magnitude more tokens than AI-assisted interactive coding. To give an example, a recent two-and-a-half hour session used 16 million tokens of input! There are two drivers of this token-devouring behaviour: tool use, and thinking. As we've already seen, tool calls are require the agent to provide a lot of information, and also return a lot of information, generously upholstered as they are with context and reinforcement.
+
+The other main consumer of tokens is thinking blocks. What is striking, reading the full transcript of a session, is how much of it is just the model telling itself what it's going to do, then telling me what it's going to do, doing it, then telling itself that it's done it, then telling _me_ that it's done it. Here's a real example:
+
+> **Thinking:** Perfect! The example agent works correctly. Now let me update todos, create a README, and commit everything to git.
+
+> **Out loud:** Perfect! Now let me update the todos, create a README, and commit everything
+
+A cynical take on this would be that the AI companies have an incentive to develop verbose models and agents, because they're making tonnes of profit on every token. That might be true, but given the agent's capability I'm inclined to be more generous. Another reason I'm inclined to be generous is that with each passing year, my own internal monologue sounds more and more like this. I'm not suggesting that Claude is middle-aged, but repeatedly reminding yourself what you're doing and in what order is plausibly a good strategy for an agent (or absent-minded human) to stay on task.
 
 #### 6. Examining the full transcript of a coding session is enlightening! And here's how to do it
 
+After spending a few hours working with Claude Code I was curious about how the model's interface with the world was designed. I discovered that the application stores a full log of each session, in `~/.claude/projects/{project}/{transcript}.jsonl` - the transcripts are also created in the VM for Claude Code web sessions, and the agent can find them there too.
 
+I asked Claude Code to write a script to parse the JSONL transcript into a readable yaml format, including tool calls and thinking blocks. The script is available [here](https://gist.github.com/matweldon/39ecaff85210a6d68bcc047c8eba0f45) and [here's](https://github.com/matweldon/agent_treasure_hunt/blob/claude/conversation-extraction-01PTivbyh6h1SSKfLtXa3Hr3/conversation_compact_v2.yaml) an example of what the extracted transcript looks like. After doing this I found out that Claude Code also has an `/export` command that creates a text log of the entire conversation. However, that doesn't include as many details on tool calls or thinking blocks.
+
+There we go; $N=6$.
 
 
 
