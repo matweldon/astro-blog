@@ -1,0 +1,120 @@
+---
+interface Image {
+  src: string;
+  alt: string;
+  caption?: string;
+}
+
+interface Props {
+  images: Image[];
+}
+
+const { images } = Astro.props;
+---
+
+<div class="carousel-container">
+  <div class="carousel">
+    {images.map((image, index) => (
+      <div class="carousel-slide" id={`slide-${index}`}>
+        <div class="slide-content">
+          <img src={image.src} alt={image.alt} />
+          {image.caption && <p class="slide-caption">{image.caption}</p>}
+        </div>
+      </div>
+    ))}
+  </div>
+  <div class="carousel-nav">
+    {images.map((_, index) => (
+      <a href={`#slide-${index}`} class="carousel-dot" aria-label={`Go to slide ${index + 1}`}>
+        <span></span>
+      </a>
+    ))}
+  </div>
+</div>
+
+<style>
+  .carousel-container {
+    max-width: 100%;
+    margin: 2em 0;
+    position: relative;
+  }
+
+  .carousel {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    gap: 0;
+  }
+
+  .carousel::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+  }
+
+  .carousel-slide {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 100%;
+  }
+
+  .slide-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .carousel-slide img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .slide-caption {
+    margin-top: 0.75rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: rgb(var(--gray));
+    font-style: italic;
+    padding: 0 1rem;
+  }
+
+  .carousel-nav {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .carousel-dot {
+    display: block;
+    padding: 0.5rem;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .carousel-dot span {
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ccc;
+    transition: background-color 0.3s ease;
+  }
+
+  .carousel-dot:hover span,
+  .carousel-dot:focus span {
+    background-color: #888;
+  }
+
+  .carousel-dot:active span {
+    background-color: #333;
+  }
+</style>

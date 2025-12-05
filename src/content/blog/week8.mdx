@@ -7,6 +7,8 @@ draft: false
 slug: week-8
 ---
 
+import ImageCarousel from '../../components/ImageCarousel.astro';
+
 This week, we covered topics around DevOps and engineering. Rather than going into depth on a topic, we covered a range of topics superficially, including: the meaning of DevOps; provisioning cloud resources; Terraform; CI/CD; containers; and git. The range of prior experiences of the course participants is wide, so it's difficult to cater to everyone's learning needs, but I found the wide overview of topics useful. I was especially interested in containers, and the question of how to lock down an environment for an AI agent - the course leader obligingly went into detail on how to create and harden secure containers. He recommended [Podman](https://podman.io/) as a more secure alternative to Docker. I've created a [TILs](/astro-blog/blog/tils) post to capture some of the smaller things I learned each week.
 
 We also spent time on our end-of-course projects. Over the past three weeks I've spent a lot of time coding with agents (mainly Claude Code (Sonnet 4.5), Gemini Cli (Gemini 2.5 pro) and GitHub Copilot agent mode (GPT 5)) so I'm going to take this opportunity to write down some impressions while they're fresh in my mind.
@@ -30,6 +32,21 @@ This is probably my most important insight from exploring different agentic codi
 To give a prominent example, as well as writing files from scratch, coding agents have to be able to make edits on existing files. From what I can gather, the developers of Claude Code and the developers of GitHub Copilot have taken very different approaches to this. GitHub Copilot appears to read files into context, and then call a tool that submits a git-style patch to make edits.
 
 In contrast, the Claude Code 'Read' tool adds line numbers, equivalent to running `cat -n`. Their edit tool is a JSON-based tool where the model provides an "old_string" and a "new_string" parameter. The edit is only made if the old string is matched, and then the agent harness provides detailed feedback to the model, printing a snippet of the changed file. It's not clear to me whether the Claude agent can choose to edit multiple positions in one file, but in my experience it usually only edited one snippet per tool call. This was in contrast to the GH Copilot 'patch' approach, in which the agent seems to habitually send a single patch to edit multiple segments of a file at once. Something about this setup appears to make a big difference to the fidelity of edits. In my testing, the GitHub Copilot agent often made edits that mangled the file, such as the example below which inserted an unclosed Terraform fragment in the middle of a comment block.
+
+<ImageCarousel
+  images={[
+    {
+      src: '/astro-blog/terraform-patch.png',
+      alt: 'GitHub Copilot patch showing malformed Terraform edit',
+      caption: 'The patch submitted by GitHub Copilot, inserting an unclosed Terraform fragment'
+    },
+    {
+      src: '/astro-blog/terraform-result.png',
+      alt: 'Result of applying the malformed patch',
+      caption: 'The resulting file after applying the patch, with the Terraform fragment incorrectly inserted in the middle of a comment block'
+    }
+  ]}
+/>
 
 It may be a result of a model being developed by one software house, OpenAI, and the agent harness being developed by a different software house (Microsoft). I didn't get a chance to test OpenAI's own agentic coding tool, Codex, but it would be interesting to see how the tools are designed there and what kind of difference it makes. If it turns out that agents benefit greatly from being developed to work to the strengths of a specific model or family of models, that would raise questions about not only GitHub Copilot, but also Cursor, Kiro and many other products developed as generic agentic coding tools serving diverse models.
 
