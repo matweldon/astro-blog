@@ -25,9 +25,9 @@ const { images } = Astro.props;
   </div>
   <div class="carousel-nav">
     {images.map((_, index) => (
-      <a href={`#slide-${index}`} class="carousel-dot" aria-label={`Go to slide ${index + 1}`}>
+      <button type="button" class="carousel-dot" aria-label={`Go to slide ${index + 1}`} data-slide={index}>
         <span></span>
-      </a>
+      </button>
     ))}
   </div>
 </div>
@@ -67,10 +67,12 @@ const { images } = Astro.props;
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 0 1rem;
+    box-sizing: border-box;
   }
 
   .carousel-slide img {
-    max-width: 100%;
+    max-width: 95%;
     height: auto;
     display: block;
     border-radius: 8px;
@@ -94,10 +96,11 @@ const { images } = Astro.props;
   }
 
   .carousel-dot {
-    display: block;
+    background: none;
+    border: none;
     padding: 0.5rem;
     cursor: pointer;
-    text-decoration: none;
+    display: inline-block;
   }
 
   .carousel-dot span {
@@ -127,12 +130,12 @@ const { images } = Astro.props;
       const carousel = container.querySelector('.carousel');
       const dots = container.querySelectorAll('.carousel-dot');
 
-      dots.forEach((dot, index) => {
-        dot.addEventListener('click', (e) => {
-          e.preventDefault();
+      dots.forEach(dot => {
+        dot.addEventListener('click', () => {
+          const slideIndex = parseInt(dot.getAttribute('data-slide'));
           const slides = carousel.querySelectorAll('.carousel-slide');
-          if (slides[index]) {
-            slides[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+          if (slides[slideIndex]) {
+            slides[slideIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
           }
         });
       });
