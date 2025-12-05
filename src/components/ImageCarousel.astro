@@ -118,3 +118,24 @@ const { images } = Astro.props;
     background-color: #333;
   }
 </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const carouselContainers = document.querySelectorAll('.carousel-container');
+
+    carouselContainers.forEach(container => {
+      const carousel = container.querySelector('.carousel');
+      const dots = container.querySelectorAll('.carousel-dot');
+
+      dots.forEach((dot, index) => {
+        dot.addEventListener('click', (e) => {
+          e.preventDefault();
+          const slides = carousel.querySelectorAll('.carousel-slide');
+          if (slides[index]) {
+            slides[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+          }
+        });
+      });
+    });
+  });
+</script>
