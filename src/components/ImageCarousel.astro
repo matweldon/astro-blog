@@ -26,7 +26,7 @@ const { images } = Astro.props;
   <div class="carousel-nav">
     {images.map((_, index) => (
       <button type="button" class="carousel-dot" aria-label={`Go to slide ${index + 1}`} data-slide={index}>
-        <span></span>
+        {index + 1}
       </button>
     ))}
   </div>
@@ -91,54 +91,130 @@ const { images } = Astro.props;
   .carousel-nav {
     display: flex;
     justify-content: center;
-    gap: 0.5rem;
-    margin-top: 1rem;
+    gap: 1rem;
+    margin-top: 0.5rem;
   }
 
   .carousel-dot {
     background: none;
     border: none;
-    padding: 0.5rem;
+    padding: 0.5rem 0.25rem;
     cursor: pointer;
     display: inline-block;
+
+    /* Number styles */
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #888;
+    transition: color 0.3s ease;
+    position: relative;
   }
 
-  .carousel-dot span {
+  /* .carousel-dot span {
     display: block;
     width: 10px;
     height: 10px;
     border-radius: 50%;
     background-color: #ccc;
     transition: background-color 0.3s ease;
-  }
+  } */
 
-  .carousel-dot:hover span,
+  /* .carousel-dot:hover span,
   .carousel-dot:focus span {
     background-color: #888;
   }
 
   .carousel-dot:active span {
     background-color: #333;
+  } */
+
+  .carousel-dot:hover,
+  .carousel-dot:focus {
+    color: #444;
+  }
+
+  .carousel-dot:active {
+    color: #000;
+  }
+
+  .carousel-dot.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: currentColor; /* Uses the current text color (#000) */
+    border-radius: 1.5px;
   }
 </style>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const carouselContainers = document.querySelectorAll('.carousel-container');
 
-    carouselContainers.forEach(container => {
-      const carousel = container.querySelector('.carousel');
-      const dots = container.querySelectorAll('.carousel-dot');
+ // Script adds dot navigation, active state detection, and handles scrolling behaviour.
+ // CSS handles the basic scrolling behaviour.
 
-      dots.forEach(dot => {
-        dot.addEventListener('click', () => {
-          const slideIndex = parseInt(dot.getAttribute('data-slide'));
-          const slides = carousel.querySelectorAll('.carousel-slide');
-          if (slides[slideIndex]) {
-            slides[slideIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-          }
+  const carouselContainers = document.querySelectorAll('.carousel-container');
+
+  carouselContainers.forEach(container => {
+    const carousel = container.querySelector('.carousel');
+    const dots = container.querySelectorAll('.carousel-dot');
+    const slides = container.querySelectorAll('.carousel-slide');
+
+    // 1. Function to manage active state
+    const setActiveDot = (activeIndex) => {
+        dots.forEach((dot, index) => {
+            dot.classList.remove('active');
+            if (index === activeIndex) {
+                dot.classList.add('active');
+            }
         });
+    };
+
+    // Initialize the first slide as active on load
+    if (dots.length > 0) {
+        setActiveDot(0);
+    }
+
+    // 2. Click handler: scrolls and immediately sets the active dot
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        const slideIndex = parseInt(dot.getAttribute('data-slide'));
+
+        // Set active state immediately on click
+        setActiveDot(slideIndex); 
+        
+        if (slides[slideIndex]) {
+          slides[slideIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+        }
       });
     });
+
+    // 3. Intersection Observer to detect scroll changes
+    // Detects when the majority (80%) of a slide is visible in the carousel viewport
+    const observerOptions = {
+      root: carousel,
+      rootMargin: '0px',
+      threshold: 0.8 
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // Extract the index from the slide ID (e.g., 'slide-0')
+          const slideId = entry.target.id;
+          const index = parseInt(slideId.split('-')[1]);
+  
+          setActiveDot(index);
+        }
+      });
+    }, observerOptions);
+
+    // Attach observer to each slide
+    slides.forEach(slide => {
+      observer.observe(slide);
+    });
   });
+
 </script>
+
